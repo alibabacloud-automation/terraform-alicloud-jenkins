@@ -46,6 +46,10 @@ variable "image_id" {
   type        = string
   default     = ""
 }
+variable "image_name_regex" {
+  description = "The ECS image's name regex used to fetch specified image."
+  default     = "^ubuntu_18"
+}
 
 variable "instance_type" {
   description = "The instance type used to launch instance."

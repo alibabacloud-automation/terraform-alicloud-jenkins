@@ -7,7 +7,7 @@ provider "alicloud" {
 }
 data "alicloud_images" "centos" {
   most_recent = true
-  name_regex  = "centos_7"
+  name_regex  = var.image_name_regex
 }
 # Create an ECS Instance to deploy jenkins
 module "jenkins" {
@@ -75,8 +75,10 @@ resource "null_resource" "remote" {
       password = var.instance_password
       host     = module.jenkins.this_public_ip.0
     }
-    inline = ["chmod +x /tmp/install.sh", "/tmp/install.sh"]
+    inline = [
+      "chmod +x /tmp/install.sh",
+      "/tmp/install.sh"
+    ]
   }
   depends_on = [null_resource.file]
 }
-

@@ -50,3 +50,8 @@ output "this_availability_zone" {
   description = "The zone id of the instance."
   value       = concat(module.jenkins.this_availability_zone, [""])[0]
 }
+
+output "this_jenkins_url" {
+  description = "The jenkins Access link."
+  value       = format("http://%s:8080/jenkins", concat(module.jenkins.this_public_ip, [""])[0])
+}
