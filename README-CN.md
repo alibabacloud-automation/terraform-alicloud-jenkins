@@ -1,7 +1,7 @@
 terraform-alicloud-jenkins
 =====================================================================
 
-本 Terraform 模块将用于在阿里云上部署高可用Jenkins。
+本 Terraform 模块将用于在阿里云上一键部署 Jenkins。
 
 本 Module 支持创建以下资源:
 

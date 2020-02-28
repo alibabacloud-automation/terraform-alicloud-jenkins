@@ -1,5 +1,5 @@
 variable "region" {
-  default = "cn-beijing"
+  default = "eu-central-1"
 }
 variable "profile" {
   default = "default"
