@@ -11,17 +11,11 @@ These types of resources are supported:
 
 * [ECS Instance](https://www.terraform.io/docs/providers/alicloud/r/instance.html)
 
-## Terraform versions
-
-This module requires Terraform 0.12 and Terraform Provider AliCloud 1.56.0+.
-
 ## Usage
 
 ```hcl
 module "jenkins" {
   source = "terraform-alicloud-modules/jenkins/alicloud"
-  region                      = "cn-hangzhou"
-  profile                     = "Your-Profile-Name"
 
   instance_name               = "myJenkins1"
   instance_password           = "YourPassword123"
@@ -38,9 +32,69 @@ module "jenkins" {
 * [complete](https://github.com/terraform-alicloud-modules/terraform-alicloud-jenkins/tree/master/examples/complete)
 
 ## Notes
+From the version v1.1.0, the module has removed the following `provider` setting:
 
-* This module using AccessKey and SecretKey are from `profile` and `shared_credentials_file`.
-If you have not set them yet, please install [aliyun-cli](https://github.com/aliyun/aliyun-cli#installation) and configure it.
+```hcl
+provider "alicloud" {
+  profile                 = var.profile != "" ? var.profile : null
+  shared_credentials_file = var.shared_credentials_file != "" ? var.shared_credentials_file : null
+  region                  = var.region != "" ? var.region : null
+  skip_region_validation  = var.skip_region_validation
+  configuration_source    = "terraform-alicloud-modules/jenkins"
+}
+```
+
+If you still want to use the `provider` setting to apply this module, you can specify a supported version, like 1.0.0:
+
+```hcl
+module "jenkins" {
+  source               = "terraform-alicloud-modules/jenkins/alicloud"
+  version              = "1.0.0"
+  region               = "cn-hangzhou"
+  profile              = "Your-Profile-Name"
+  instance_type        = "ecs.n1.small"
+  system_disk_category = "cloud_efficiency"
+  // ...
+}
+```
+
+If you want to upgrade the module to 1.1.0 or higher in-place, you can define a provider which same region with
+previous region:
+
+```hcl
+provider "alicloud" {
+  region  = "cn-hangzhou"
+  profile = "Your-Profile-Name"
+}
+module "jenkins" {
+  source               = "terraform-alicloud-modules/jenkins/alicloud"
+  instance_type        = "ecs.n1.small"
+  system_disk_category = "cloud_efficiency"
+  // ...
+}
+```
+or specify an alias provider with a defined region to the module using `providers`:
+
+```hcl
+provider "alicloud" {
+  region  = "cn-hangzhou"
+  profile = "Your-Profile-Name"
+  alias   = "hz"
+}
+module "jenkins" {
+  source               = "terraform-alicloud-modules/jenkins/alicloud"
+  providers = {
+    alicloud = alicloud.hz
+  }
+  instance_type        = "ecs.n1.small"
+  system_disk_category = "cloud_efficiency"
+  // ...
+}
+```
+
+and then run `terraform init` and `terraform apply` to make the defined provider effect to the existing module state.
+
+More details see [How to use provider in the module](https://www.terraform.io/docs/language/modules/develop/providers.html#passing-providers-explicitly)
 
 Submit Issues
 -------------
