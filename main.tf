@@ -4,19 +4,15 @@ data "alicloud_images" "centos" {
 }
 # Create an ECS Instance to deploy jenkins
 module "jenkins" {
-  source                  = "alibaba/ecs-instance/alicloud"
-  profile                 = var.profile != "" ? var.profile : null
-  shared_credentials_file = var.shared_credentials_file != "" ? var.shared_credentials_file : null
-  region                  = var.region != "" ? var.region : null
-  skip_region_validation  = var.skip_region_validation
-
+  source  = "alibaba/ecs-instance/alicloud"
+  version = "3.0.0"
 
   number_of_instances = 1
   use_num_suffix      = false
 
   instance_name = var.instance_name
   password      = var.instance_password
-  image_id      = var.image_id != "" ? var.image_id : data.alicloud_images.centos.ids.0
+  image_id      = var.image_id != "" ? var.image_id : data.alicloud_images.centos.ids[0]
   instance_type = var.instance_type
 
   instance_charge_type = var.instance_charge_type
@@ -55,7 +51,7 @@ resource "null_resource" "file" {
       type     = "ssh"
       user     = "root"
       password = var.instance_password
-      host     = module.jenkins.this_public_ip.0
+      host     = module.jenkins.this_public_ip[0]
     }
   }
 }
@@ -66,7 +62,7 @@ resource "null_resource" "remote" {
       type     = "ssh"
       user     = "root"
       password = var.instance_password
-      host     = module.jenkins.this_public_ip.0
+      host     = module.jenkins.this_public_ip[0]
     }
     inline = [
       "chmod +x /tmp/install.sh",
