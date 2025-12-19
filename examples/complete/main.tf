@@ -1,38 +1,30 @@
-variable "region" {
-  default = "eu-central-1"
-}
-variable "profile" {
-  default = "default"
-}
 provider "alicloud" {
-  region  = var.region
-  profile = var.profile
+  region = var.region
 }
 
-data "alicloud_vpcs" "default" {
-  is_default = true
-}
-data "alicloud_vswitches" "default" {
-  ids = [data.alicloud_vpcs.default.vpcs.0.vswitch_ids.0]
-}
-data "alicloud_instance_types" "this" {
-  cpu_core_count    = 1
-  memory_size       = 2
-  availability_zone = data.alicloud_vswitches.default.vswitches.0.zone_id
+data "alicloud_zones" "default" {
 }
 
-module "jenkins" {
-  source  = "../../"
-  region  = var.region
-  profile = var.profile
+data "alicloud_instance_types" "default" {
+  availability_zone    = data.alicloud_zones.default.zones[0].id
+  cpu_core_count       = 2
+  memory_size          = 8
+  instance_type_family = "ecs.g9i"
+}
 
-  instance_name              = "myJenkins1"
-  instance_password          = "YourPassword123"
-  instance_type              = data.alicloud_instance_types.this.ids.0
-  system_disk_category       = "cloud_efficiency"
-  security_group_ids         = [module.security_group.this_security_group_id]
-  vswitch_id                 = data.alicloud_vpcs.default.vpcs.0.vswitch_ids.0
-  internet_max_bandwidth_out = 50
+data "alicloud_images" "default" {
+  most_recent   = true
+  instance_type = data.alicloud_instance_types.default.instance_types[0].id
+}
+
+module "vpc" {
+  source  = "alibaba/vpc/alicloud"
+  version = "~>1.11"
+
+  create             = true
+  vpc_cidr           = "172.16.0.0/16"
+  vswitch_cidrs      = ["172.16.0.0/21"]
+  availability_zones = [data.alicloud_zones.default.zones[0].id]
 }
 
 ##################################################################
@@ -40,11 +32,25 @@ module "jenkins" {
 ##################################################################
 module "security_group" {
   source  = "alibaba/security-group/alicloud"
-  region  = var.region
-  profile = var.profile
+  version = "2.4.1"
 
-  vpc_id              = data.alicloud_vpcs.default.ids.0
-  name                = "test-lex-1"
-  ingress_cidr_blocks = ["0.0.0.0/0"]
+
+  vpc_id = module.vpc.this_vpc_id
+  name   = "test-lex-1"
+  # ingress_cidr_blocks = ["0.0.0.0/0"]
+  ingress_cidr_blocks = ["172.16.0.0/21"]
   ingress_rules       = ["all-all"]
+}
+
+module "jenkins" {
+  source = "../../"
+
+  instance_name              = "myJenkins1"
+  instance_password          = "YourPassword123"
+  instance_type              = data.alicloud_instance_types.default.ids[0]
+  system_disk_category       = "cloud_essd"
+  security_group_ids         = [module.security_group.this_security_group_id]
+  vswitch_id                 = module.vpc.this_vswitch_ids[0]
+  internet_max_bandwidth_out = 50
+  image_id                   = data.alicloud_images.default.images[0].id
 }
