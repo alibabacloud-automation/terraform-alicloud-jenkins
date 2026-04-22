@@ -5,7 +5,7 @@ data "alicloud_images" "centos" {
 # Create an ECS Instance to deploy jenkins
 module "jenkins" {
   source  = "alibaba/ecs-instance/alicloud"
-  version = "3.0.0"
+  version = "4.0.0"
 
   number_of_instances = 1
   use_num_suffix      = false
