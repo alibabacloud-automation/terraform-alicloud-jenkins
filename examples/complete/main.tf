@@ -19,7 +19,7 @@ data "alicloud_images" "default" {
 
 module "vpc" {
   source  = "alibaba/vpc/alicloud"
-  version = "~>1.11"
+  version = "2.0.0"
 
   create             = true
   vpc_cidr           = "172.16.0.0/16"
@@ -32,7 +32,7 @@ module "vpc" {
 ##################################################################
 module "security_group" {
   source  = "alibaba/security-group/alicloud"
-  version = "2.4.1"
+  version = "3.0.0"
 
 
   vpc_id = module.vpc.this_vpc_id
